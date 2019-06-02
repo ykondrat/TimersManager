@@ -3,6 +3,7 @@ class TimersManager {
         this.timers = [];
         this.requiredProperties = ['name', 'delay', 'interval', 'job'];
         this.logs = [];
+        this.mainTimer = null;
     }
 
     _checkTimer (timer) {
@@ -81,6 +82,16 @@ class TimersManager {
         }
     }
 
+    _startMainTimer (time) {
+        this.mainTimer = setTimeout(() => {
+            for (let i = 0; i < this.timers.length; i++) {
+                this.remove(this.timers[i].name);
+            }
+
+            clearTimeout(this.mainTimer);
+        }, time + 10000);
+    }
+
     add (timer, ...props) {
         this._checkTimer(timer);
         // Set arguments for timer in params
@@ -101,12 +112,17 @@ class TimersManager {
     }
 
     start () {
+        let max = 0;
         for (let i = 0; i < this.timers.length; i++) {
             // If task already started dont start it again
             if (!this.timers[i].task) {
                 this._startTask(i);
             }
+            if (this.timers[i].delay > max) {
+                max = this.timers[i].delay;
+            }
         }
+        this._startMainTimer(max);
     }
 
     stop () {
