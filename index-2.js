@@ -2,6 +2,7 @@ class TimersManager {
     constructor () {
         this.timers = [];
         this.requiredProperties = ['name', 'delay', 'interval', 'job'];
+        this.logs = [];
     }
 
     checkTimer (timer) {
@@ -12,10 +13,10 @@ class TimersManager {
         if (typeof timer !== 'object') {
             throw new Error(
                 'timer must be an object:\n{\n' +
-                    '\tname*:     String, // timer name\n' +
-                    '\tdelay*:    Number,  // timer delay in ms\n' +
-                    '\tinterval*: Boolean, // is timer or interval\n' +
-                    '\tjob*:      Function, // timer job\n' +
+                '\tname*:     String, // timer name\n' +
+                '\tdelay*:    Number,  // timer delay in ms\n' +
+                '\tinterval*: Boolean, // is timer or interval\n' +
+                '\tjob*:      Function, // timer job\n' +
                 '}\n'
             );
         }
@@ -63,11 +64,15 @@ class TimersManager {
         // If interval === true work with interval
         if (this.timers[index].interval) {
             this.timers[index].task = setInterval(() => {
-                this.timers[index].job(...this.timers[index].params);
+                const result = this.timers[index].job(...this.timers[index].params);
+
+                this._log(this.timers[index], result);
             }, this.timers[index].delay);
         } else {
             this.timers[index].task = setTimeout(() => {
-                this.timers[index].job(...this.timers[index].params);
+                const result = this.timers[index].job(...this.timers[index].params);
+
+                this._log(this.timers[index], result);
             }, this.timers[index].delay);
         }
     }
@@ -149,5 +154,20 @@ class TimersManager {
         } else {
             throw new Error('Timer name must be a string');
         }
+    }
+
+    print () {
+        for (let i = 0; i < this.logs.length; i++) {
+            console.log(this.logs[i]);
+        }
+    }
+
+    _log (timer, result) {
+        this.logs.push({
+            name: timer.name,
+            in: timer.params,
+            out: result,
+            created: new Date(),
+        });
     }
 }
