@@ -76,9 +76,15 @@ class TimersManager {
     _startTask (index) {
         // If interval === true work with interval
         if (this.timers[index].interval) {
-            this.timers[index].task = setInterval(this._handlerTask(this.timers[index]), this.timers[index].delay);
+            this.timers[index].task = setInterval(
+                this._handlerTask(this.timers[index]),
+                this.timers[index].delay
+            );
         } else {
-            this.timers[index].task = setTimeout(this._handlerTask(this.timers[index]), this.timers[index].delay);
+            this.timers[index].task = setTimeout(
+                this._handlerTask(this.timers[index]),
+                this.timers[index].delay
+            );
         }
     }
 
