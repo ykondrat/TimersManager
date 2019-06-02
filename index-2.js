@@ -5,7 +5,7 @@ class TimersManager {
         this.logs = [];
     }
 
-    checkTimer (timer) {
+    _checkTimer (timer) {
         const existedTimersName = this.timers.map((item) => item.name);
         const arrayOfTimerKeys = Object.keys(timer);
 
@@ -49,7 +49,7 @@ class TimersManager {
         }
     }
 
-    clearTask (index) {
+    _clearTask (index) {
         // If interval === true work with interval
         if (this.timers[index].interval) {
             clearInterval(this.timers[index].task);
@@ -60,25 +60,31 @@ class TimersManager {
         }
     }
 
-    startTask (index) {
+    _handlerTask (timer) {
+        return () => {
+            const result = timer.job(...timer.params);
+
+            this._log(timer, result);
+        }
+    }
+
+    _startTask (index) {
         // If interval === true work with interval
         if (this.timers[index].interval) {
-            this.timers[index].task = setInterval(() => {
-                const result = this.timers[index].job(...this.timers[index].params);
-
-                this._log(this.timers[index], result);
-            }, this.timers[index].delay);
+            this.timers[index].task = setInterval(
+                this._handlerTask(this.timers[index]),
+                this.timers[index].delay
+            );
         } else {
-            this.timers[index].task = setTimeout(() => {
-                const result = this.timers[index].job(...this.timers[index].params);
-
-                this._log(this.timers[index], result);
-            }, this.timers[index].delay);
+            this.timers[index].task = setTimeout(
+                this._handlerTask(this.timers[index]),
+                this.timers[index].delay
+            );
         }
     }
 
     add (timer, ...props) {
-        this.checkTimer(timer);
+        this._checkTimer(timer);
         // Set arguments for timer in params
         timer.params = props;
         this.timers.push(timer);
@@ -100,7 +106,7 @@ class TimersManager {
         for (let i = 0; i < this.timers.length; i++) {
             // If task already started dont start it again
             if (!this.timers[i].task) {
-                this.startTask(i);
+                this._startTask(i);
             }
         }
     }
@@ -109,7 +115,7 @@ class TimersManager {
         for (let i = 0; i < this.timers.length; i++) {
             // If task already stopped wont stop it again
             if (this.timers[i].task) {
-                this.clearTask(i);
+                this._clearTask(i);
             }
         }
     }
@@ -122,7 +128,7 @@ class TimersManager {
                         // If task on pause return null
                         return null;
                     }
-                    this.clearTask(i);
+                    this._clearTask(i);
 
                     // If task stopped return index of timer
                     return i;
@@ -143,7 +149,7 @@ class TimersManager {
                         // If task already started
                         return null;
                     }
-                    this.startTask(i);
+                    this._startTask(i);
 
                     // If task started return index of timer
                     return i;
@@ -164,9 +170,9 @@ class TimersManager {
 
     _log (timer, result) {
         this.logs.push({
-            name: timer.name,
-            in: timer.params,
-            out: result,
+            name:    timer.name,
+            in:      timer.params,
+            out:     result,
             created: new Date(),
         });
     }
